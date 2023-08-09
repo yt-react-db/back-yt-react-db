@@ -1,0 +1,9 @@
+google:
+  client_id: "464467440760-esn45nbi5mg2krjgjipanshoquqlqg0m.apps.googleusercontent.com"
+  oauth2_token_url: "https://oauth2.googleapis.com/token"
+  youtube_channel_info_url: "https://www.googleapis.com/youtube/v3/channels?mine=true&part=brandingSettings"
+
+database:
+  host: "localhost"
+  port: 5432
+  database_name: "yt-react-database"

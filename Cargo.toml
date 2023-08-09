@@ -1,0 +1,20 @@
+[package]
+name = "back-yt-react-db"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+actix-cors = "0.6.4"
+actix-web = "4.3.1"
+config = { version = "0.13.3", features = ["yaml"] }
+dotenv = "0.15.0"
+env_logger = "0.10.0"
+log = "0.4.19"
+reqwest = {version = "0.11.18", features = ["json"]}
+secrecy = { version = "0.8.0", features = ["serde"] }
+serde = { version = "1.0.183",  features = ["derive"] }
+serde-aux = "4.2.0"
+serde_json = "1.0.104"
+sqlx = { version = "0.7.1", features = ["runtime-tokio", "tls-rustls", "macros", "postgres", "uuid", "chrono", "migrate"] } # bstr, bigdecimal, ipnetwork, json
