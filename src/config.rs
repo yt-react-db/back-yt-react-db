@@ -3,9 +3,10 @@ use secrecy::Secret;
 use serde::Deserialize;
 use serde_aux::prelude::deserialize_number_from_string;
 use dotenv::dotenv;
+use jwt_simple::prelude::*;
 
 #[derive(Deserialize, Clone, Debug)]
-pub struct AppConfig {
+pub struct PartialAppConfig {
     pub google: GoogleConfig,
     pub database: DatabaseConfig,
 }
@@ -28,16 +29,52 @@ pub struct DatabaseConfig {
     pub password: Secret<String>,
 }
 
-pub fn init_config() -> AppConfig {
+/*
+// could use this to read .env file
+#[derive(Deserialize, Clone, Debug)]
+struct MySource;
 
-    dotenv().ok();
+impl Source for MySource {
+    fn clone_into_box(&self) -> Box<dyn Source + Send + Sync> {
+        Box::new((*self).clone())
+    }
+    fn collect(&self) -> Result<Map<String, Value>, ConfigError> {
+        let mut map = Map::new();
+        map.insert("test".to_string(), Value::new(Some(&"test_origin".to_string()), ValueKind::String("your_mom".to_string())));
+        Ok(map)
+    }
+}
+*/
 
-    let builder = config::Config::builder()
-        .add_source(Environment::default())
-        .add_source(File::new("config/config.yaml", FileFormat::Yaml))
-        .build()
-        .expect("Failed to create config");
-    
-    builder.try_deserialize::<AppConfig>().expect("Failed to deserialize config")
+
+#[derive(Clone, Debug)]
+pub struct AppConfig {
+    pub google: GoogleConfig,
+    pub database: DatabaseConfig,
+    pub key: HS256Key,
+}
+
+impl AppConfig {
+
+    pub fn new() -> AppConfig {
+
+        dotenv().ok();
+
+        let builder = config::Config::builder()
+            .add_source(Environment::default())
+            .add_source(File::new("config/config.yaml", FileFormat::Yaml))
+            .build()
+            .expect("Failed to create config");
+        let partial = builder.try_deserialize::<PartialAppConfig>().expect("Failed to deserialize config");
+
+        AppConfig {
+            google: partial.google,
+            database: partial.database,
+            /// yep, a new key is generated every time the app starts, shouldn't be a big deal
+            /// If you have an unlucky timing, you will have to redo the process, my bad, you will be fine
+            key: HS256Key::generate(),
+        }
+
+    }
 
 }

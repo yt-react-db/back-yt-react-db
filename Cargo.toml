@@ -12,6 +12,7 @@ anyhow = "1.0.72"
 config = { version = "0.13.3", features = ["yaml"] }
 dotenv = "0.15.0"
 env_logger = "0.10.0"
+jwt-simple = "0.11.6"
 log = "0.4.19"
 reqwest = {version = "0.11.18", features = ["json"]}
 secrecy = { version = "0.8.0", features = ["serde"] }

@@ -23,7 +23,7 @@ async fn handle_post(data: web::Json<serde_json::Value>) -> impl Responder {
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
 
-    let config = config::init_config();
+    let config = config::AppConfig::new();
     let reqwest_client = Client::new();
 
     env_logger::init_from_env(Env::default().default_filter_or("debug"));

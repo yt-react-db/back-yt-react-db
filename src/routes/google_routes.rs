@@ -2,15 +2,16 @@
 use actix_web::ResponseError;
 use actix_web::http::header::ContentType;
 use actix_web::{web, post, HttpResponse, http::StatusCode};
-use log::{error, info};
+use log::error;
 use secrecy::ExposeSecret;
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use reqwest::Client;
 use anyhow::anyhow;
 use anyhow::Context;
 use serde_json::json;
 
 use crate::config::AppConfig;
+use jwt_simple::prelude::*;
 
 /// The Authorization code the user received in the frontend after signing
 /// in with Google & giving (or not) consent.
@@ -190,6 +191,21 @@ async fn get_channels_info(token_response: &AccessToken, client:&Client, config:
     Ok(res.json::<ChannelsInfo>().await.context("unable to parse channels info")?)
 }
 
+#[derive(Serialize, Deserialize)]
+struct ClaimPermissions {
+    channel_id: String,
+    channel_title: String,
+}
+
+impl ClaimPermissions {
+    fn new(channels_info: &ChannelsInfo) -> Self {
+        ClaimPermissions {
+            channel_id: channels_info.items[0].id.clone(),
+            channel_title: channels_info.items[0].branding_settings.channel.title.clone(),
+        }
+    }
+}
+
 #[post("/get_the_juice")]
 async fn get_the_juice(data: web::Json<AuthCode>, client: web::Data<Client>, config: web::Data<AppConfig>) -> Result<HttpResponse, GError> {
 
@@ -197,10 +213,20 @@ async fn get_the_juice(data: web::Json<AuthCode>, client: web::Data<Client>, con
     let token_response = get_access_token(&data, &client, &config).await?;
     let channels_info = get_channels_info(&token_response, &client, &config).await?;
 
-    if channels_info.page_info.total_results > 0 {
-        info!("Channel title: {:?}", channels_info.items[0].branding_settings.channel.title);
-        info!("Channel ID: {:?}", channels_info.items[0].id);
+    if channels_info.page_info.total_results == 0 {
+       return Err(GError::UnexpectedError(anyhow!("No channels found")));
     }
+    // can we have more than 1? not in our case, right? if it causes a problem
+    // surely someone will hit me up
 
-    Ok(HttpResponse::Ok().body("ok"))
+    // these names are trash
+    let claim_permissions = ClaimPermissions::new(&channels_info);
+    let claim = Claims::with_custom_claims(claim_permissions, Duration::from_hours(1));
+    let token = config.key.authenticate(claim).context("Failed to create token")?;
+
+    Ok(HttpResponse::Ok().body(
+        json!({
+            "message": token,
+        }).to_string()
+    ))
 }
