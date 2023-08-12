@@ -3,10 +3,12 @@ use actix_web::{get, post, web::{self, Data}, App, HttpResponse, HttpServer, Res
 use env_logger::Env;
 use reqwest::Client;
 use routes::google_routes::get_the_juice;
+use routes::data::set_permissions;
 
 
 pub mod config;
 pub mod routes;
+pub mod models;
 
 #[get("/health_check")]
 async fn health_check() -> impl Responder {
@@ -41,6 +43,7 @@ async fn main() -> std::io::Result<()> {
             .service(health_check)
             .service(handle_post)
             .service(get_the_juice)
+            .service(set_permissions)
             .app_data(Data::new(reqwest_client.clone()))
             .app_data(Data::new(config.clone()))
     })

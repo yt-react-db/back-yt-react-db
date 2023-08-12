@@ -4,14 +4,16 @@ use actix_web::http::header::ContentType;
 use actix_web::{web, post, HttpResponse, http::StatusCode};
 use log::error;
 use secrecy::ExposeSecret;
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 use reqwest::Client;
 use anyhow::anyhow;
 use anyhow::Context;
 use serde_json::json;
 
 use crate::config::AppConfig;
+use crate::models::claim::ClaimPermissions;
 use jwt_simple::prelude::*;
+
 
 /// The Authorization code the user received in the frontend after signing
 /// in with Google & giving (or not) consent.
@@ -34,28 +36,28 @@ struct AccessToken {
 
 #[derive(Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
-struct PageInfo {
+pub struct PageInfo {
     total_results: u32,
     //results_per_page: u32,
 }
 
 #[derive(Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
-struct Channel {
-    title: String,
+pub struct Channel {
+    pub title: String,
 }
 
 #[derive(Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
-struct BrandingSettings {
-    channel: Channel,
+pub struct BrandingSettings {
+    pub channel: Channel,
 }
 
 #[derive(Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
-struct Item {
-    id: String,
-    branding_settings: BrandingSettings,
+pub struct Item {
+    pub id: String,
+    pub branding_settings: BrandingSettings,
 }
 
 /// Example
@@ -89,10 +91,10 @@ struct Item {
 /// ```
 #[derive(Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
-struct ChannelsInfo {
+pub struct ChannelsInfo {
     //kind: String,
-    page_info: PageInfo,
-    items: Vec<Item>,
+    pub page_info: PageInfo,
+    pub items: Vec<Item>,
 }
 
 // ERROR shit ------------------------------------------------------------------
@@ -191,20 +193,6 @@ async fn get_channels_info(token_response: &AccessToken, client:&Client, config:
     Ok(res.json::<ChannelsInfo>().await.context("unable to parse channels info")?)
 }
 
-#[derive(Serialize, Deserialize)]
-struct ClaimPermissions {
-    channel_id: String,
-    channel_title: String,
-}
-
-impl ClaimPermissions {
-    fn new(channels_info: &ChannelsInfo) -> Self {
-        ClaimPermissions {
-            channel_id: channels_info.items[0].id.clone(),
-            channel_title: channels_info.items[0].branding_settings.channel.title.clone(),
-        }
-    }
-}
 
 #[post("/get_the_juice")]
 async fn get_the_juice(data: web::Json<AuthCode>, client: web::Data<Client>, config: web::Data<AppConfig>) -> Result<HttpResponse, GError> {
