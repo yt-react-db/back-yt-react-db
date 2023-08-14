@@ -9,6 +9,7 @@ edition = "2021"
 actix-cors = "0.6.4"
 actix-web = "4.3.1"
 anyhow = "1.0.72"
+chrono = {version = "0.4.26", features = ["serde"]}
 config = { version = "0.13.3", features = ["yaml"] }
 dotenv = "0.15.0"
 env_logger = "0.10.0"

@@ -21,7 +21,7 @@ CREATE TABLE youtuber_permissions (
     can_upload_reaction Permission NOT null,
     upload_reaction_delay VARCHAR(4) DEFAULT NULL, -- same as live_reaction_delay
 
-    last_updated_at TIMESTAMP DEFAULT NOW()
+    last_updated_at TIMESTAMPTZ DEFAULT NOW()
 
 );
 
@@ -49,7 +49,7 @@ CREATE TABLE youtuber_permissions_history (
     upload_reaction_delay VARCHAR(4) DEFAULT NULL,
 
     -- date when it was originally updated (not now)
-    set_at TIMESTAMP
+    set_at TIMESTAMPTZ
 );
 
 CREATE OR REPLACE FUNCTION copy_before_update()

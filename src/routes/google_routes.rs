@@ -193,7 +193,9 @@ async fn get_channels_info(token_response: &AccessToken, client:&Client, config:
     Ok(res.json::<ChannelsInfo>().await.context("unable to parse channels info")?)
 }
 
-
+/// Returns a jwt containing channel_id & channel_title in the body.
+/// A safer approach would be to set the jwt in a HttpOnly cookie, and put the
+/// channel_id & channel_title in the body. 
 #[post("/get_the_juice")]
 async fn get_the_juice(data: web::Json<AuthCode>, client: web::Data<Client>, config: web::Data<AppConfig>) -> Result<HttpResponse, GError> {
 
