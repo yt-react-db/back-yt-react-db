@@ -3,8 +3,8 @@ use crate::routes::google_routes::ChannelsInfo;
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct ClaimPermissions {
-    channel_id: String,
-    channel_title: String,
+    pub channel_id: String,
+    pub channel_title: String,
 }
 
 impl ClaimPermissions {

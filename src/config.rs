@@ -1,9 +1,10 @@
 use config::{File, FileFormat, Environment};
-use secrecy::Secret;
+use secrecy::{Secret, ExposeSecret};
 use serde::Deserialize;
 use serde_aux::prelude::deserialize_number_from_string;
 use dotenv::dotenv;
 use jwt_simple::prelude::*;
+use sqlx::{postgres::{PgConnectOptions, PgSslMode, PgPoolOptions}, ConnectOptions, PgPool};
 
 #[derive(Deserialize, Clone, Debug)]
 pub struct PartialAppConfig {
@@ -27,6 +28,7 @@ pub struct DatabaseConfig {
     pub database_name: String,
     pub username: String,
     pub password: Secret<String>,
+    pub require_ssl: bool,
 }
 
 /*
@@ -75,6 +77,27 @@ impl AppConfig {
             key: HS256Key::generate(),
         }
 
+    }
+
+    pub fn init_connection_pool(&self) -> PgPool {
+        let ssl_mode = if self.database.require_ssl {
+            PgSslMode::Require
+        } else {
+            PgSslMode::Prefer
+        };
+        let pg_conn_options = PgConnectOptions::new()
+            .host(&self.database.host)
+            .username(&self.database.username)
+            .password(self.database.password.expose_secret())
+            .port(self.database.port)
+            .ssl_mode(ssl_mode)
+            .log_statements(log::LevelFilter::Trace) // TODO: change this
+            .database(&self.database.database_name);
+        
+        PgPoolOptions::new()
+            .acquire_timeout(std::time::Duration::from_secs(5))
+            .max_connections(10)
+            .connect_lazy_with(pg_conn_options)
     }
 
 }

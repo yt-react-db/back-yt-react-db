@@ -27,6 +27,7 @@ async fn main() -> std::io::Result<()> {
 
     let config = config::AppConfig::new();
     let reqwest_client = Client::new();
+    let db_pool = config.init_connection_pool();
 
     env_logger::init_from_env(Env::default().default_filter_or("debug"));
 
@@ -46,6 +47,7 @@ async fn main() -> std::io::Result<()> {
             .service(set_permissions)
             .app_data(Data::new(reqwest_client.clone()))
             .app_data(Data::new(config.clone()))
+            .app_data(Data::new(db_pool.clone()))
     })
     .bind(("127.0.0.1", 8080))?
     .run()

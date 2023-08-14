@@ -1,5 +1,12 @@
 
 
+## useful links
+
+
+* <https://docs.rs/sqlx/latest/>
+    * <https://docs.rs/sqlx/latest/sqlx/trait.Type.html>
+    * <https://docs.rs/sqlx/latest/sqlx/trait.FromRow.html#rename_all>
+* <https://docs.rs/sqlx-postgres/latest/sqlx_postgres/>
 ## DB stuff
 
 * one table

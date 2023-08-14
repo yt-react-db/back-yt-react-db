@@ -1,5 +1,5 @@
 -- Add migration script here
-CREATE TYPE Permissions AS ENUM (
+CREATE TYPE Permission AS ENUM (
     'yes',
     'yes_with_delay',
     'no'
@@ -9,19 +9,20 @@ CREATE TABLE youtuber_permissions (
 
     id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
 
-    channel_id CHAR(24) NOT NULL,
+    channel_id CHAR(24) NOT NULL UNIQUE,
     channel_title TEXT NOT NULL,
 
     -- permission 1
-    can_react_live Permissions NOT NULL,
+    can_react_live Permission NOT NULL,
     live_reaction_delay VARCHAR(4) DEFAULT NULL, -- "0" up to "999y", "999h", "999d", "999w", "999m",
         -- h: hours, d: days, w: weeks, y: years
 
     -- permission 2
-    can_upload_reaction Permissions NOT null,
+    can_upload_reaction Permission NOT null,
     upload_reaction_delay VARCHAR(4) DEFAULT NULL, -- same as live_reaction_delay
 
     last_updated_at TIMESTAMP DEFAULT NOW()
+
 );
 
 CREATE INDEX youtuber_permissions__channel_id__idx
@@ -41,10 +42,10 @@ CREATE TABLE youtuber_permissions_history (
 
     channel_id CHAR(24) NOT NULL,
 
-    can_react_live Permissions NOT NULL,
+    can_react_live Permission NOT NULL,
     live_reaction_delay VARCHAR(4) DEFAULT NULL,
 
-    can_upload_reaction Permissions NOT NULL,
+    can_upload_reaction Permission NOT NULL,
     upload_reaction_delay VARCHAR(4) DEFAULT NULL,
 
     -- date when it was originally updated (not now)
@@ -68,7 +69,7 @@ BEGIN
         OLD.last_updated_at
     );
 
-    RETURN OLD; -- Return the original row
+    RETURN NEW; -- Return the original row
 
 END;
 $$ LANGUAGE plpgsql;
