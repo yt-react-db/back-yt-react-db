@@ -26,7 +26,10 @@ async fn handle_post(data: web::Json<serde_json::Value>) -> impl Responder {
 async fn main() -> std::io::Result<()> {
 
     let config = config::AppConfig::new();
-    let reqwest_client = Client::new();
+    let reqwest_client = Client::builder()
+        .timeout(std::time::Duration::from_secs(10))
+        .build()
+        .unwrap();
     let db_pool = config.init_connection_pool();
 
     env_logger::init_from_env(Env::default().default_filter_or("debug"));
