@@ -1,6 +1,7 @@
-use actix_web::{post, web, HttpResponse, Result, ResponseError, Responder, get};
+use actix_web::{post, web, HttpResponse, Result, ResponseError, Responder, get, http::StatusCode};
 use anyhow::Context;
 use jwt_simple::prelude::MACLike;
+use log::debug;
 use serde::{Deserialize, Serialize};
 use sqlx::{PgPool, types::chrono::{DateTime, Utc}};
 
@@ -49,9 +50,19 @@ pub struct SetPermissionsData {
 pub enum DataError {
     #[error("TODO error handling")]
     ToDo(#[from] anyhow::Error),
+
+    #[error("{0}")]
+    NotFound(String)
 }
 
-impl ResponseError for DataError {}
+impl ResponseError for DataError {
+    fn status_code(&self) -> reqwest::StatusCode {
+        match *self {
+            DataError::NotFound(_) => StatusCode::NOT_FOUND,
+            _ => StatusCode::INTERNAL_SERVER_ERROR,
+        }
+    }
+}
 
 #[post("/set_permissions")]
 pub async fn set_permissions(permissions: web::Json<SetPermissionsData>, config: web::Data<AppConfig>, conn: web::Data<PgPool>) -> Result<HttpResponse, DataError> {
@@ -108,4 +119,33 @@ pub async fn get_full_permissions_list(conn: web::Data<PgPool>) -> Result<impl R
     ).fetch_all(conn.get_ref()).await.context("couldn't fetch list")?;
 
     Ok(web::Json(full_list))
+}
+
+
+#[get("/permissions/{channel_id}")]
+pub async fn get_permission_by_channel_id(path: web::Path<String>, conn: web::Data<PgPool>) -> Result<impl Responder, DataError> {
+
+    let channel_id = path.into_inner();
+
+    let permissions = sqlx::query_as!(YoutuberPermissions,
+        r#"
+        SELECT
+            channel_id,
+            channel_title,
+            can_react_live as "can_react_live!: Permission",
+            live_reaction_delay,
+            can_upload_reaction as "can_upload_reaction!: Permission",
+            upload_reaction_delay,
+            last_updated_at as "last_updated_at!: DateTime<Utc>"
+        FROM youtuber_permissions
+        WHERE channel_id = $1"#,
+        channel_id
+    ).fetch_optional(conn.get_ref()).await.context("couldn't fetch permissions")?;
+
+    debug!("{:?}", permissions);
+    if let Some(permissions) = permissions {
+        Ok(web::Json(permissions))
+    } else {
+        Err(DataError::NotFound(r#"{"message": "Permission not found for given channel_ID"}"#.to_string()))
+    }
 }

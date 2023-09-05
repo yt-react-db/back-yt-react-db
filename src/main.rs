@@ -2,7 +2,7 @@ use actix_cors::Cors;
 use actix_web::{get, post, web::{self, Data}, App, HttpResponse, HttpServer, Responder, middleware::Logger};
 use env_logger::Env;
 use reqwest::Client;
-use routes::{google_routes::get_the_juice, data::get_full_permissions_list};
+use routes::{google_routes::get_the_juice, data::{get_full_permissions_list, get_permission_by_channel_id}};
 use routes::data::set_permissions;
 
 
@@ -46,6 +46,7 @@ async fn main() -> std::io::Result<()> {
             .service(get_the_juice)
             .service(set_permissions)
             .service(get_full_permissions_list)
+            .service(get_permission_by_channel_id)
             .app_data(Data::new(reqwest_client.clone()))
             .app_data(Data::new(config.clone()))
             .app_data(Data::new(db_pool.clone()))
