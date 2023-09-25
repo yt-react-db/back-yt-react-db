@@ -1,7 +1,7 @@
 use actix_web::{post, web::{self}, HttpResponse, Result, ResponseError, Responder, get, http::{StatusCode, header::{CacheControl, CacheDirective, ContentType}}};
 use anyhow::Context;
 use jwt_simple::prelude::MACLike;
-use log::{debug, warn};
+use log::debug;
 use serde::{Deserialize, Serialize};
 use sqlx::{PgPool, types::chrono::{DateTime, Utc}};
 
@@ -139,7 +139,7 @@ pub async fn get_full_permissions_list(conn: web::Data<PgPool>) -> Result<impl R
 #[get("/permissions/{channel_id}")]
 pub async fn get_permission_by_channel_id(path: web::Path<String>, conn: web::Data<PgPool>) -> Result<impl Responder, DataError> {
 
-    warn!("again?");
+    debug!("again?");
     let channel_id = path.into_inner();
 
     let permissions = sqlx::query_as!(YoutuberPermissions,
