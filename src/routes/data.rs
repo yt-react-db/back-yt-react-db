@@ -1,4 +1,4 @@
-use actix_web::{post, web, HttpResponse, Result, ResponseError, Responder, get, http::{StatusCode, header::{CacheControl, CacheDirective, ContentType}}};
+use actix_web::{post, web::{self}, HttpResponse, Result, ResponseError, Responder, get, http::{StatusCode, header::{CacheControl, CacheDirective, ContentType}}};
 use anyhow::Context;
 use jwt_simple::prelude::MACLike;
 use log::{debug, warn};
@@ -60,6 +60,19 @@ impl ResponseError for DataError {
         match *self {
             DataError::NotFound(_) => StatusCode::NOT_FOUND,
             _ => StatusCode::INTERNAL_SERVER_ERROR,
+        }
+    }
+
+    fn error_response(&self) -> HttpResponse<actix_web::body::BoxBody> {
+        match *self {
+            DataError::NotFound(ref msg) => HttpResponse::build(self.status_code())
+                .insert_header(CacheControl(vec![CacheDirective::MaxAge(86400u32)])) // one day (maybe could be more)
+                .insert_header(ContentType::json())
+                .body(msg.clone())
+            ,
+            _ => HttpResponse::build(self.status_code())
+                .insert_header(ContentType::plaintext())
+                .body(self.to_string())
         }
     }
 }
