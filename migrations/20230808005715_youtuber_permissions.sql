@@ -14,8 +14,8 @@ CREATE TABLE youtuber_permissions (
 
     -- permission 1
     can_react_live Permission NOT NULL,
-    live_reaction_delay VARCHAR(4) DEFAULT NULL, -- "0" up to "999y", "999h", "999d", "999w", "999m",
-        -- h: hours, d: days, w: weeks, y: years
+    live_reaction_delay VARCHAR(4) DEFAULT NULL, -- "0" up to "999y", "999d", "999w", "999m",
+        -- d: days, w: weeks, y: years
 
     -- permission 2
     can_upload_reaction Permission NOT null,

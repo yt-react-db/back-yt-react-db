@@ -72,8 +72,8 @@ impl AppConfig {
         AppConfig {
             google: partial.google,
             database: partial.database,
-            /// yep, a new key is generated every time the app starts, shouldn't be a big deal
-            /// If you have an unlucky timing, you will have to redo the process, my bad, you will be fine
+            // yep, a new key is generated every time the app starts, shouldn't be a big deal
+            // If you have an unlucky timing, you will have to redo the process, my bad, you will be fine
             key: HS256Key::generate(),
         }
 

@@ -1,7 +1,7 @@
-use actix_web::{post, web, HttpResponse, Result, ResponseError, Responder, get, http::StatusCode};
+use actix_web::{post, web, HttpResponse, Result, ResponseError, Responder, get, http::{StatusCode, header::{CacheControl, CacheDirective, ContentType}}};
 use anyhow::Context;
 use jwt_simple::prelude::MACLike;
-use log::debug;
+use log::{debug, warn};
 use serde::{Deserialize, Serialize};
 use sqlx::{PgPool, types::chrono::{DateTime, Utc}};
 
@@ -74,6 +74,7 @@ pub async fn set_permissions(permissions: web::Json<SetPermissionsData>, config:
 
     // extract this
 
+    // TODO: add some value checking (unit = d, w, m, y), or enforce it with an enum?
     // TODO: check value of "can_..." if != than yes_with_delay, set delay to NULL
     let live_reaction_delay   = format!("{}{}", permissions.live_reaction_delay_value,   permissions.live_reaction_delay_unit);
     let upload_reaction_delay = format!("{}{}", permissions.upload_reaction_delay_value, permissions.upload_reaction_delay_unit);
@@ -125,6 +126,7 @@ pub async fn get_full_permissions_list(conn: web::Data<PgPool>) -> Result<impl R
 #[get("/permissions/{channel_id}")]
 pub async fn get_permission_by_channel_id(path: web::Path<String>, conn: web::Data<PgPool>) -> Result<impl Responder, DataError> {
 
+    warn!("again?");
     let channel_id = path.into_inner();
 
     let permissions = sqlx::query_as!(YoutuberPermissions,
@@ -144,7 +146,14 @@ pub async fn get_permission_by_channel_id(path: web::Path<String>, conn: web::Da
 
     debug!("{:?}", permissions);
     if let Some(permissions) = permissions {
-        Ok(web::Json(permissions))
+        let response = HttpResponse::Ok()
+            .insert_header(ContentType::json())
+            .insert_header(CacheControl(vec![CacheDirective::MaxAge(86400u32)])) // one day (maybe could be more)
+            // .insert_header(CacheControl(vec![CacheDirective::MaxAge(5u32)])) // TEST: use this line for testing purposes
+            .insert_header(("Last-Modified", permissions.last_updated_at.to_string()))
+            //.insert_header(("ETag", "abctest")) // use this?
+            .json(permissions);
+        Ok(response)
     } else {
         Err(DataError::NotFound(r#"{"message": "Permission not found for given channel_ID"}"#.to_string()))
     }
