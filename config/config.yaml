@@ -1,5 +1,5 @@
 google:
-  client_id: "464467440760-esn45nbi5mg2krjgjipanshoquqlqg0m.apps.googleusercontent.com"
+  client_id: "488907415842-q5ai0g1bfg5b0gl2c3sqoilu8blitp02.apps.googleusercontent.com"
   oauth2_token_url: "https://oauth2.googleapis.com/token"
   youtube_channel_info_url: "https://www.googleapis.com/youtube/v3/channels?mine=true&part=brandingSettings"
 
