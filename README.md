@@ -1,4 +1,4 @@
-
+TODO: write a nice readme
 
 ## useful links
 
@@ -26,3 +26,14 @@ variable `postgres://${DB_USER}:${DB_PASSWORD}@${DB_PORT}/${DB_NAME}`
     * and adds a file `{timestamp}_<name_of_migration>.sql`
 * to run a migration: `sqlx migrate run`
 * sqlx creates a table `sqlx_migrations` to keep track of already run.
+
+
+# log
+
+log level default is DEBUG.
+To change:
+
+RUST_LOG=info
+
+error, warn, info, debug, trace
+

@@ -91,7 +91,7 @@ impl AppConfig {
             .password(self.database.password.expose_secret())
             .port(self.database.port)
             .ssl_mode(ssl_mode)
-            .log_statements(log::LevelFilter::Trace) // TODO: change this
+            .log_statements(log::max_level()) 
             .database(&self.database.database_name);
         
         PgPoolOptions::new()
