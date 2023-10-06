@@ -26,7 +26,7 @@ async fn main() -> std::io::Result<()> {
         .build()
         .unwrap();
     let db_pool = config.init_connection_pool();
-
+    let server_config = config.server.clone();
 
     HttpServer::new(move || {
         let cors = Cors::default()
@@ -47,7 +47,8 @@ async fn main() -> std::io::Result<()> {
             .app_data(Data::new(config.clone()))
             .app_data(Data::new(db_pool.clone()))
     })
-    .bind(("127.0.0.1", 8080))?
+    .workers(server_config.num_workers)
+    .bind((server_config.host, server_config.port))?
     .run()
     .await
 }

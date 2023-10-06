@@ -10,6 +10,7 @@ use sqlx::{postgres::{PgConnectOptions, PgSslMode, PgPoolOptions}, ConnectOption
 pub struct PartialAppConfig {
     pub google: GoogleConfig,
     pub database: DatabaseConfig,
+    pub server: ServerConfig,
 }
 
 #[derive(Deserialize, Clone, Debug)]
@@ -48,11 +49,18 @@ impl Source for MySource {
 }
 */
 
+#[derive(Deserialize, Clone, Debug)]
+pub struct ServerConfig {
+    pub host: String,
+    pub port: u16,
+    pub num_workers: usize,
+}
 
 #[derive(Clone, Debug)]
 pub struct AppConfig {
     pub google: GoogleConfig,
     pub database: DatabaseConfig,
+    pub server: ServerConfig,
     pub key: HS256Key,
 }
 
@@ -72,6 +80,7 @@ impl AppConfig {
         AppConfig {
             google: partial.google,
             database: partial.database,
+            server: partial.server,
             // yep, a new key is generated every time the app starts, shouldn't be a big deal
             // If you have an unlucky timing, you will have to redo the process, my bad, you will be fine
             key: HS256Key::generate(),

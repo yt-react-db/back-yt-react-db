@@ -8,3 +8,8 @@ database:
   port: 5432
   database_name: "yt-react-database"
   require_ssl: false
+
+server:
+  host: "localhost"
+  port: 8080
+  num_workers: 8
