@@ -43,51 +43,42 @@ pub struct PageInfo {
 
 #[derive(Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
-pub struct Channel {
+pub struct Snippet {
     pub title: String,
-}
-
-#[derive(Deserialize, Debug)]
-#[serde(rename_all = "camelCase")]
-pub struct BrandingSettings {
-    pub channel: Channel,
+    pub custom_url: String,
 }
 
 #[derive(Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct Item {
     pub id: String,
-    pub branding_settings: BrandingSettings,
+    pub snippet: Snippet,
 }
 
+/// the API https://developers.google.com/youtube/v3/docs/channels/list
+/// item: https://developers.google.com/youtube/v3/docs/channels
+/// 
 /// Example
 /// ```JSON
 /// {
-///  "kind": "youtube#channelListResponse",
-///  "etag": "whatever_this_is",
-///  "pageInfo": {
-///    "totalResults": 1,
-///    "resultsPerPage": 5
-///  },
-///  "items": [
-///    {
-///      "kind": "youtube#channel",
-///      "etag": "oijefa",
-///      "id": "UCIv6GIlP5uXbiu666bOUobQ",
-///      "brandingSettings": {
-///        "channel": {
-///          "title": "ComputerBread",
-///          "description": "oiajf",
-///          "keywords": "...",
-///          "country": "FR"
-///        },
-///        "image": {
-///          "bannerExternalUrl": "https://yt3.googleusercontent.com/58..."
-///        }
-///      }
-///    }
-///  ]
-///}
+///   "kind": "..",
+///   "etag": "...",
+///   "pageInfo": {
+///     "totalResults": 1,
+///     "resultsPerPage": 5
+///   },
+///   "items": [
+///     {
+///       ...
+///       "id": "...channelID",
+///       "snippet": {
+///         "title": "ComputerBread",
+///         "customUrl": "@computerbread",
+///         ...
+///       }
+///     }
+///   ]
+/// }
 /// ```
 #[derive(Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]

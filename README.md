@@ -15,7 +15,7 @@ Why rust? [Because](https://youtu.be/St8iEpkcDJc?si=Z2RbFyMBoZvq8CFd&t=5)
 * `POST /get_the_juice` returns the youtube channel ID & title of a youtuber inside a
 jwt, after he logged in & consent for the youtube.readonly scope (check [authorization code flow](https://developers.google.com/identity/oauth2/web/guides/how-user-authz-works#when_using_the_auth_code_flow))
 * `GET /permissions/full_list`: to get full list of permissions
-* `GET /permissions/<channel-ID>`: to get permissions of a specific channel
+* `GET /permissions/<channel-ID or customURL>`: to get permissions of a specific channel
 * `POST /set_permissions`: to save permissions given by a youtuber
 
 ## Configuration
@@ -75,9 +75,33 @@ that we store in the backend (`set_permissions`).
 
 ## useful links
 
-
 * <https://docs.rs/sqlx/latest/>
     * <https://docs.rs/sqlx/latest/sqlx/trait.Type.html>
     * <https://docs.rs/sqlx/latest/sqlx/trait.FromRow.html#rename_all>
 * <https://docs.rs/sqlx-postgres/latest/sqlx_postgres/>
+* [custom URL overview](https://support.google.com/youtube/answer/2657968?hl=en)
+* [YouTube Data API channels/list](https://developers.google.com/youtube/v3/docs/channels/list)
+    * [part of the response](https://developers.google.com/youtube/v3/docs/channels)
 
+## about customURL & handleURL
+
+sources:
+- [Handles overview](https://support.google.com/youtube/answer/11585688)
+- [Understand your YouTube channel's URLs](https://support.google.com/youtube/answer/6180214)
+
+* Handle URL, Example: youtube.com/@youtubecreators
+* Custom URL, Example: youtube.com/c/YouTubeCreators
+
+but now, custom URL = Handle URL. All legacy URLs now redirect users to handle URL.
+The single thing I hope is that the YouTube API will not return a "custom URL",
+I only saw handles, but we never know...
+
+Handle naming:
+
+* Is between 3-30 characters
+* Is made up of alphanumeric characters (A–Z, a–z, 0–9), underscores (_), hyphens (-), periods (.)
+* Is not URL-like or phone number-like
+* Is not already being used
+* Follows YouTube's Community Guidelines
+
+Handles aren't case-sensitive.

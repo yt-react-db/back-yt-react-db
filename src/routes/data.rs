@@ -96,10 +96,10 @@ pub async fn set_permissions(permissions: web::Json<SetPermissionsData>, config:
     // extract this
     sqlx::query!(
         "INSERT INTO youtuber_permissions \
-            (channel_id, channel_title, \
+            (channel_id, channel_title, custom_url,\
             can_react_live, live_reaction_delay, \
             can_upload_reaction, upload_reaction_delay) \
-        VALUES ($1, $2, $3, $4, $5, $6) \
+        VALUES ($1, $2, $3, $4, $5, $6, $7) \
         ON CONFLICT (channel_id) DO UPDATE \
             SET can_react_live = EXCLUDED.can_react_live, \
             live_reaction_delay = EXCLUDED.live_reaction_delay, \
@@ -107,7 +107,7 @@ pub async fn set_permissions(permissions: web::Json<SetPermissionsData>, config:
             upload_reaction_delay = EXCLUDED.upload_reaction_delay,
             last_updated_at = NOW(); \
         ",
-        claims.channel_id, claims.channel_title,
+        claims.channel_id, claims.channel_title, claims.custom_url,
         permissions.can_react_live.clone() as Permission, live_reaction_delay, 
         permissions.can_upload_reaction.clone() as Permission, upload_reaction_delay, 
 
@@ -136,26 +136,50 @@ pub async fn get_full_permissions_list(conn: web::Data<PgPool>) -> Result<impl R
 }
 
 
-#[get("/permissions/{channel_id}")]
+#[get("/permissions/{channel_id_or_custom_url}")]
 pub async fn get_permission_by_channel_id(path: web::Path<String>, conn: web::Data<PgPool>) -> Result<impl Responder, DataError> {
 
     debug!("again?");
-    let channel_id = path.into_inner();
+    let channel_id_or_custom_url = path.into_inner();
 
-    let permissions = sqlx::query_as!(YoutuberPermissions,
-        r#"
-        SELECT
-            channel_id,
-            channel_title,
-            can_react_live as "can_react_live!: Permission",
-            live_reaction_delay,
-            can_upload_reaction as "can_upload_reaction!: Permission",
-            upload_reaction_delay,
-            last_updated_at as "last_updated_at!: DateTime<Utc>"
-        FROM youtuber_permissions
-        WHERE channel_id = $1"#,
-        channel_id
-    ).fetch_optional(conn.get_ref()).await.context("couldn't fetch permissions")?;
+    let permissions;
+
+    if channel_id_or_custom_url.starts_with("@") {
+
+        permissions = sqlx::query_as!(YoutuberPermissions,
+            r#"
+            SELECT
+                channel_id,
+                channel_title,
+                can_react_live as "can_react_live!: Permission",
+                live_reaction_delay,
+                can_upload_reaction as "can_upload_reaction!: Permission",
+                upload_reaction_delay,
+                last_updated_at as "last_updated_at!: DateTime<Utc>"
+            FROM youtuber_permissions
+            WHERE LOWER(custom_url) = LOWER($1)"#,
+            channel_id_or_custom_url
+        ).fetch_optional(conn.get_ref()).await.context("couldn't fetch permissions")?;
+
+
+    } else {
+
+        permissions = sqlx::query_as!(YoutuberPermissions,
+            r#"
+            SELECT
+                channel_id,
+                channel_title,
+                can_react_live as "can_react_live!: Permission",
+                live_reaction_delay,
+                can_upload_reaction as "can_upload_reaction!: Permission",
+                upload_reaction_delay,
+                last_updated_at as "last_updated_at!: DateTime<Utc>"
+            FROM youtuber_permissions
+            WHERE channel_id = $1"#,
+            channel_id_or_custom_url
+        ).fetch_optional(conn.get_ref()).await.context("couldn't fetch permissions")?;
+
+    }
 
     debug!("{:?}", permissions);
     if let Some(permissions) = permissions {

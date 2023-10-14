@@ -1,0 +1,2 @@
+CREATE INDEX youtuber_permissions__LOWER_custom_url__idx
+ON youtuber_permissions (LOWER(custom_url));
