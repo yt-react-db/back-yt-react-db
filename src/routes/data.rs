@@ -104,7 +104,9 @@ pub async fn set_permissions(permissions: web::Json<SetPermissionsData>, config:
             SET can_react_live = EXCLUDED.can_react_live, \
             live_reaction_delay = EXCLUDED.live_reaction_delay, \
             can_upload_reaction = EXCLUDED.can_upload_reaction, \
-            upload_reaction_delay = EXCLUDED.upload_reaction_delay,
+            upload_reaction_delay = EXCLUDED.upload_reaction_delay, \
+            channel_title = EXCLUDED.channel_title, \
+            custom_url = EXCLUDED.custom_url, \
             last_updated_at = NOW(); \
         ",
         claims.channel_id, claims.channel_title, claims.custom_url,
